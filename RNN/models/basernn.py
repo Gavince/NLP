@@ -28,7 +28,7 @@ class RNNModel(nn.Module):
         X = F.one_hot(input.T.long(), self.vocab_size)
         X = X.to(torch.float32)
         Y, state = self.rnn(X, state)
-
+        # 构造T*B个多分类的结果
         output = self.linear(Y.reshape((-1, Y.shape[-1])))
 
         return output, state
