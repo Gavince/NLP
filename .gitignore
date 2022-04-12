@@ -130,3 +130,5 @@ dmypy.json
 !/Seq2Seq/checkpoints/
 !/Seq2Seq/logs/
 !/Seq2Seq/logs/graph/
+!/Seq2Seq/checkpoints/
+!/data/
