@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 !/Seq2Seq/checkpoints/
 !/Seq2Seq/logs/
+!/Seq2Seq/logs/graph/

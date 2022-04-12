@@ -91,11 +91,11 @@ def predict(net, src_sentence, src_vocab, tgt_vocab, num_steps, device, save_att
 if __name__ == "__main__":
     embed_size, num_hiddens, num_layers, dropout = 32, 32, 2, 0.1
     batch_size, num_steps = 64, 10
-    lr, num_epcohs, device = 0.005, 300, d2l.try_gpu(10)
+    lr, num_epcohs, device = 0.005, 300, d2l.try_gpu()
     print(device)
     train_iter, src_vocab, tgt_vocab = d2l.load_data_nmt(batch_size, num_steps)
     encoder = Seq2SeqEncoder(len(src_vocab), embed_size, num_hiddens, num_layers, dropout)
     decoder = Seq2SeqDecoder(len(tgt_vocab), embed_size, num_hiddens, num_layers, dropout)
     net = EncoderDecoder(encoder, decoder)
-    # train_net(net, train_iter, lr, num_epcohs, tgt_vocab, device)
-    print(predict(net, "go !", src_vocab, tgt_vocab, num_steps, device))
+    train_net(net, train_iter, lr, num_epcohs, tgt_vocab, device)
+    # print(predict(net, "go !", src_vocab, tgt_vocab, num_steps, device))
