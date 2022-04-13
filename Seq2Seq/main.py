@@ -4,6 +4,9 @@
 # @FileName: train.py.py
 # @Software: PyCharm
 # @Blog    ：https://blog.csdn.net/weixin_35154281
+import collections
+import math
+
 from torch.utils.tensorboard import SummaryWriter
 import matplotlib.pyplot as plt
 import torch
@@ -60,7 +63,7 @@ def train_net(net, date_iter, lr, num_epochs, tgt_vocab, device):
 
 
 @torch.no_grad()
-def predict(net, src_sentence, src_vocab, tgt_vocab, num_steps, device, save_attention_weights=False):
+def predict_seq2seq(net, src_sentence, src_vocab, tgt_vocab, num_steps, device, save_attention_weights=False):
     net.load_state_dict(torch.load("./checkpoints/net.pth"))
     net.eval()
     # 处理为num
@@ -88,6 +91,24 @@ def predict(net, src_sentence, src_vocab, tgt_vocab, num_steps, device, save_att
     return " ".join(tgt_vocab.to_tokens(output_seq)), attention_weight_seq
 
 
+def bleu(pred_seq, lab_seq, k):
+    pre_tokens, label_tokens = pred_seq.split(" "), lab_seq.split(" ")
+    len_pred, len_label = len(pre_tokens), len(label_tokens)
+    score = math.exp(min(0, 1 - len_label / len_pred))
+    # 计算N-Gram
+    for n in range(1, k + 1):
+        num_matches, label_subs = 0, collections.defaultdict(int)
+        # 统计词频
+        for i in range(len_label - n + 1):
+            label_subs[" ".join(label_tokens[i: i + n])] += 1
+        for i in range(len_pred - n + 1):
+            if label_subs[" ".join(pre_tokens[i: i + n])] > 0:
+                num_matches += 1
+                label_subs[" ".join(pre_tokens[i: i + n])] -= 1
+        score *= math.pow(num_matches / (len_pred - n + 1), math.pow(0.5, n))
+    return score
+
+
 if __name__ == "__main__":
     embed_size, num_hiddens, num_layers, dropout = 32, 32, 2, 0.1
     batch_size, num_steps = 64, 10
@@ -97,5 +118,17 @@ if __name__ == "__main__":
     encoder = Seq2SeqEncoder(len(src_vocab), embed_size, num_hiddens, num_layers, dropout)
     decoder = Seq2SeqDecoder(len(tgt_vocab), embed_size, num_hiddens, num_layers, dropout)
     net = EncoderDecoder(encoder, decoder)
-    train_net(net, train_iter, lr, num_epcohs, tgt_vocab, device)
+    #
+    training = False
+    if training:
+        train_net(net, train_iter, lr, num_epcohs, tgt_vocab, device)
+    else:
+        device = d2l.try_gpu(10)
+        net.load_state_dict(torch.load("./checkpoints/net.pth"))
     # print(predict(net, "go !", src_vocab, tgt_vocab, num_steps, device))
+    engs = ['go .', "i lost .", 'he\'s calm .', 'i\'m home .']
+    fras = ['va !', 'j\'ai perdu .', 'il est calme .', 'je suis chez moi .']
+    for eng, fra in zip(engs, fras):
+        translation, attention_weight_seq = predict_seq2seq(
+            net, eng, src_vocab, tgt_vocab, num_steps, device)
+        print(f'{eng} => {translation}, bleu {bleu(translation, fra, k=2):.3f}')
