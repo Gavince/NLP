@@ -7,3 +7,4 @@
 from .seq2seq import Seq2SeqEncoder
 from .seq2seq import Seq2SeqDecoder
 from .seq2seq import EncoderDecoder
+from .seq2seqforatt import Seq2SeqAttentionDecoder

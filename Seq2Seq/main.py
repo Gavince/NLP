@@ -14,7 +14,7 @@ from d2l import torch as d2l
 from torch import nn
 from utils import MaskSoftmaxCELoss
 from tqdm import tqdm
-from models import Seq2SeqEncoder, Seq2SeqDecoder
+from models import Seq2SeqEncoder, Seq2SeqDecoder, Seq2SeqAttentionDecoder
 from models import EncoderDecoder
 
 
@@ -116,10 +116,10 @@ if __name__ == "__main__":
     print(device)
     train_iter, src_vocab, tgt_vocab = d2l.load_data_nmt(batch_size, num_steps)
     encoder = Seq2SeqEncoder(len(src_vocab), embed_size, num_hiddens, num_layers, dropout)
-    decoder = Seq2SeqDecoder(len(tgt_vocab), embed_size, num_hiddens, num_layers, dropout)
+    decoder = Seq2SeqAttentionDecoder(len(tgt_vocab), embed_size, num_hiddens, num_layers, dropout)
     net = EncoderDecoder(encoder, decoder)
     #
-    training = False
+    training = True
     if training:
         train_net(net, train_iter, lr, num_epcohs, tgt_vocab, device)
     else:
