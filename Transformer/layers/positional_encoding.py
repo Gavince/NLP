@@ -16,7 +16,7 @@ class PositionalEncoding(nn.Module):
         self.dropout = nn.Dropout(dropout)
         # 位置编码
         self.P = torch.zeros((1, max_len, num_hiddens))
-        X = torch.arange(math, dtype=torch.float32).reshape(-1, 1) \
+        X = torch.arange(max_len, dtype=torch.float32).reshape(-1, 1) \
             / torch.pow(10000, torch.arange(0, num_hiddens, 2, dtype=torch.float32) / num_hiddens)
         # 奇偶位置编码
         self.P[:, :, 0::2] = torch.sin(X)

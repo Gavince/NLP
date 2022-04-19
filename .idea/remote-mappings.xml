@@ -3,7 +3,13 @@
   <component name="RemoteMappingsManager">
     <list>
       <list>
-        <remote-mappings server-id="python@sftp://oem@10.202.1.23:22/home/oem/anaconda3/envs/zwynn/bin/python3.8" />
+        <remote-mappings server-id="python@sftp://oem@10.202.1.23:22/home/oem/anaconda3/envs/zwynn/bin/python3.8">
+          <settings>
+            <list>
+              <mapping local-root="$PROJECT_DIR$" remote-root="/media/oem/83fce006-3950-4630-8a4d-d5db0016f6cf/zhangwanyu/NLP" />
+            </list>
+          </settings>
+        </remote-mappings>
       </list>
     </list>
   </component>

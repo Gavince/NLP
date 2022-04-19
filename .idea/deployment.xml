@@ -13,7 +13,7 @@
       <paths name="oem@10.202.1.23:22 (2)">
         <serverdata>
           <mappings>
-            <mapping deploy="/media/oem/zhangwanyu/NLP" local="$PROJECT_DIR$" />
+            <mapping deploy="/media/oem/83fce006-3950-4630-8a4d-d5db0016f6cf/zhangwanyu/NLP" local="$PROJECT_DIR$" />
           </mappings>
         </serverdata>
       </paths>

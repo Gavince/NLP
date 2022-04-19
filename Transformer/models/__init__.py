@@ -4,3 +4,5 @@
 # @FileName: __init__.py.py
 # @Software: PyCharm
 # @Blog    ：https://blog.csdn.net/weixin_35154281
+from .transformer import TransformerDecoder
+from .transformer import TransformerEncoder

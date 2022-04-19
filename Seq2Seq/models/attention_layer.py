@@ -1,55 +1,15 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2022/4/18 上午8:13
+# @Time    : 2022/4/15 下午3:07
 # @Author  : gavin
-# @FileName: mutilheadattention.py
+# @FileName: attention layer.py
 # @Software: PyCharm
 # @Blog    ：https://blog.csdn.net/weixin_35154281
-import torch
-from torch import nn
 from torch.utils.tensorboard import SummaryWriter
+from torch import nn
+import torch
 import math
 from d2l import torch as d2l
-
-
-def masked_softmax(X, valid_lens):
-    """"""
-    if valid_lens is None:
-        return nn.functional.softmax(X, dim=-1)
-    else:
-        shape = X.shape
-        if valid_lens.dim() == 1:
-            valid_lens = torch.repeat_interleave(valid_lens, shape[1])
-        else:
-            # valid_lens: B*D
-            valid_lens = valid_lens.reshape(-1)
-        # mask val]
-        # X: B*T*H reshape--> (B*T) * H
-        X = d2l.sequence_mask(X.reshape(-1, shape[-1]), valid_lens, value=-1e6)
-
-        return nn.functional.softmax(X.reshape(shape), dim=-1)
-
-
-class DotProductAttention(nn.Module):
-    """点积注意力机制，计算高效"""
-
-    def __init__(self, dropout, **kwargs):
-        super(DotProductAttention, self).__init__(**kwargs)
-        self.dropout = nn.Dropout(dropout)
-
-    def forward(self, queries, keys, values, valid_lens):
-        """
-
-        :param queries: B * q_size * H
-        :param keys: B * k_size * H
-        :param values: B * v_size * H
-        :param valid_lens: 有效的查询长度
-        :return: B*q_size * (k or v)_size
-        """
-        d = queries.shape[-1]
-        scores = torch.bmm(queries, keys.transpose(1, 2)) / math.sqrt(d)
-        self.attention_weights = masked_softmax(scores, valid_lens)
-
-        return torch.bmm(self.dropout(self.attention_weights), values)
+from seq2seqforatt import DotProductAttention
 
 
 def transpose_output(X, num_heads):
@@ -106,7 +66,6 @@ class MultiHeadAttention(nn.Module):
         values = transpose_qkv(self.W_v(values), self.num_heads)
         # B*num_heads, q or (k-v), H/num_heads
         if valid_lens is not None:
-            # (num_head*B) * T
             valid_lens = torch.repeat_interleave(valid_lens, repeats=self.num_heads, dim=0)
         # B*num_heads, q, H/num_heads
         output = self.attention(queries, keys, values, valid_lens)
@@ -116,6 +75,7 @@ class MultiHeadAttention(nn.Module):
 
 
 if __name__ == "__main__":
+
     writer = SummaryWriter(log_dir="../logs/graph", comment="MultiAttention", filename_suffix="multiHeadlAttention")
     num_hiddens, num_heads = 100, 5
     attention = MultiHeadAttention(num_hiddens, num_hiddens, num_hiddens, num_hiddens, num_heads, dropout=0.5)

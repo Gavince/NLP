@@ -10,7 +10,7 @@ from torch import nn
 
 def squence_mask(X, valid_len, value=0):
     """
-
+    序列掩码
     :param X:输入序列 [B, T]
     :param valid_len: 有效的输入序列长度 [B]
     :param value: 填充值，默认为0
