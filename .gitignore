@@ -132,4 +132,4 @@ dmypy.json
 !/Seq2Seq/logs/graph/
 !/Seq2Seq/checkpoints/
 !/data/
-/Transformer/checkpoints
+git
