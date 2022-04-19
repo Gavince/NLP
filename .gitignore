@@ -127,9 +127,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-!/Seq2Seq/checkpoints/
-!/Seq2Seq/logs/
-!/Seq2Seq/logs/graph/
-!/Seq2Seq/checkpoints/
-!/data/
-git
+/Seq2Seq/logs/graph/
+/Seq2Seq/logs/loss/

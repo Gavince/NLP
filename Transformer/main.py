@@ -4,13 +4,11 @@
 # @FileName: main.py
 # @Software: PyCharm
 # @Blog    ：https://blog.csdn.net/weixin_35154281
-
 from torch.utils.tensorboard import SummaryWriter
 from models import TransformerDecoder
 from models import TransformerEncoder
 import collections
 import math
-import matplotlib.pyplot as plt
 import torch
 from d2l import torch as d2l
 from torch import nn
@@ -30,7 +28,7 @@ def train_net(net, date_iter, lr, num_epochs, tgt_vocab, device):
 
     net.apply(xavier_init_weights)
     net.to(device)
-    loss = MaskSoftmaxCELoss()
+    loss = d2l.MaskSoftmaxCELoss()
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
     net.train()
     # animator = d2l.Animator(xlabel="epoch", ylabel="loss", xlim=[10, num_epochs])
