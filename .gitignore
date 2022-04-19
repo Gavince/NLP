@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 /Seq2Seq/logs/graph/
 /Seq2Seq/logs/loss/
+.idea
