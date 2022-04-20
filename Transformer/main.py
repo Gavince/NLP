@@ -18,6 +18,7 @@ from torch import nn
 from tqdm import tqdm
 import config
 
+
 def train_net(net, date_iter, lr, num_epochs, tgt_vocab, device):
     print("Training......!")
 
@@ -170,7 +171,7 @@ if __name__ == "__main__":
     if args.is_training:
         train_net(net, train_iter, args.lr, args.num_epochs, tgt_vocab, args.device)
     else:
-    # 预测
+        # 预测
         engs = ['go .', "i lost .", 'he\'s calm .', 'i\'m home .']
         fras = ['va !', 'j\'ai perdu .', 'il est calme .', 'je suis chez moi .']
         evaluate(net, engs, fras, src_vocab, tgt_vocab, args.num_layers, args.num_steps, args.num_heads, args.device)

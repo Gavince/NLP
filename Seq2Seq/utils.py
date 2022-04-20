@@ -23,8 +23,14 @@ def squence_mask(X, valid_len, value=0):
 
 
 class MaskSoftmaxCELoss(nn.CrossEntropyLoss):
-
+    """带遮蔽的softmax交叉熵损失函数"""
     def forward(self, pre, label, valid_len):
+        """
+        :param pre:pred的形状：(batch_size,num_steps,vocab_size)
+        :param label:label的形状：(batch_size,num_steps)
+        :param valid_len:valid_len的形状：(batch_size,)
+        :return:
+        """
 
         weights = torch.ones_like(label)
         weights = squence_mask(weights, valid_len)
