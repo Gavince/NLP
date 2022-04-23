@@ -26,7 +26,7 @@ class PositionalEncoding(nn.Module):
         """
         使用加法对序列进行位置编码
         :param X: B*T*H
-        :return:
+        :return: B*T*H
         """
         X = X + self.P[:, :X.shape[1], :].to(X.device)
         # 防止过拟合出现

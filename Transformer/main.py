@@ -17,6 +17,7 @@ from d2l import torch as d2l
 from torch import nn
 from tqdm import tqdm
 import config
+import wandb
 
 
 def train_net(net, date_iter, lr, num_epochs, tgt_vocab, device):
@@ -34,19 +35,23 @@ def train_net(net, date_iter, lr, num_epochs, tgt_vocab, device):
     net.to(device)
     loss = MaskSoftmaxCELoss()
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
+
+    wandb.watch(net)
     net.train()
-    writer = SummaryWriter("./logs/loss")
     for epoch in tqdm(range(num_epochs)):
         timer = d2l.Timer()
         metric = d2l.Accumulator(2)
         for batch in date_iter:
             optimizer.zero_grad()
+            # X:[B, T], valid_len:[B]
             X, X_valid_len, Y, Y_valid_len = [x.to(device) for x in batch]
-            # begging of sequence
+            # 为预测加入句子的起始符: begging of sequence
             # B*1
             bos = torch.tensor([tgt_vocab["<bos>"]] * Y.shape[0], device=device).reshape(-1, 1)
             dec_input = torch.cat([bos, Y[:, :-1]], dim=1)
+            # Decoder:拼接起始符号和原始输入
             Y_hat, _ = net(X, dec_input, X_valid_len)
+            # l:[B, 1]
             l = loss(Y_hat, Y, Y_valid_len)
             l.sum().backward()
             d2l.grad_clipping(net, 1)
@@ -54,12 +59,14 @@ def train_net(net, date_iter, lr, num_epochs, tgt_vocab, device):
             optimizer.step()
             with torch.no_grad():
                 metric.add(l.sum(), num_tokens)
+
         if (epoch + 1) % 10 == 0:
-            writer.add_scalar("loss", scalar_value=metric[0] / metric[1], global_step=epoch + 1)
+            # writer.add_scalar("loss", scalar_value=metric[0] / metric[1], global_step=epoch + 1)
+            wandb.log({"loss": metric[0] / metric[1]})
+
     torch.save(net.state_dict(), "./checkpoints/net.pth")
     print(f'loss {metric[0] / metric[1]:.3f}, {metric[1] / timer.stop():.1f} '
           f'tokens/sec on {str(device)}')
-    writer.close()
 
 
 @torch.no_grad()
@@ -74,7 +81,7 @@ def predict_seq2seq(net, src_sentence, src_vocab, tgt_vocab, num_steps, device, 
     enx_X = torch.unsqueeze(torch.tensor(src_tokens, device=device, dtype=torch.long), dim=0)
     enc_outputs = net.encoder(enx_X, enc_valid_len)
     dec_state = net.decoder.init_state(enc_outputs, enc_valid_len)
-    # 翻译词
+    # 翻译词（第一个预测字符为开始字符编码）
     dec_X = torch.unsqueeze(torch.tensor([tgt_vocab["<bos>"]], dtype=torch.long, device=device), dim=0)
     output_seq, attention_weight_seq = [], []
 
@@ -150,7 +157,6 @@ def evaluate(net, engs, fras, src_vocab, tgt_vocab, num_layers, num_steps, num_h
 
 
 if __name__ == "__main__":
-
     args = config.get_parser()
     print("正在加载数据集......!")
     train_iter, src_vocab, tgt_vocab = d2l.load_data_nmt(args.batch_size, args.num_steps)
@@ -167,7 +173,8 @@ if __name__ == "__main__":
         args.num_layers, args.dropout)
 
     net = d2l.EncoderDecoder(encoder, decoder)
-
+    wandb.init(project="Transform", entity="wanyu")
+    wandb.config = args
     if args.is_training:
         train_net(net, train_iter, args.lr, args.num_epochs, tgt_vocab, args.device)
     else:

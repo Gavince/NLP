@@ -33,9 +33,11 @@ class MaskSoftmaxCELoss(nn.CrossEntropyLoss):
         """
 
         weights = torch.ones_like(label)
+        # 获取有效的序列长度
         weights = squence_mask(weights, valid_len)
         self.reduction = "none"
         unweighted_loss = super(MaskSoftmaxCELoss, self).forward(pre.permute(0, 2, 1), label)
+        # loss只计算有效时间步的值
         weights_loss = (unweighted_loss * weights).mean(dim=1)
 
         return weights_loss

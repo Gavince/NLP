@@ -12,7 +12,11 @@ from d2l import torch as d2l
 
 
 def masked_softmax(X, valid_lens):
-    """"""
+    """
+    :param X:　X的形状[B, T(q), T(k-v pair)]
+    :param valid_lens: 有效长度
+    :return:
+    """
     if valid_lens is None:
         return nn.functional.softmax(X, dim=-1)
     else:
@@ -47,6 +51,7 @@ class DotProductAttention(nn.Module):
         """
         d = queries.shape[-1]
         scores = torch.bmm(queries, keys.transpose(1, 2)) / math.sqrt(d)
+        # 　注意力权重矩阵　
         self.attention_weights = masked_softmax(scores, valid_lens)
 
         return torch.bmm(self.dropout(self.attention_weights), values)
@@ -87,6 +92,7 @@ class MultiHeadAttention(nn.Module):
         super(MultiHeadAttention, self).__init__(**kwargs)
         self.num_heads = num_heads
         self.attention = DotProductAttention(dropout)
+        # 使用线性投影层将数值隐射到不同子空间内进行学习
         self.W_k = nn.Linear(key_size, num_hiddens, bias=bias)
         self.W_q = nn.Linear(query_size, num_hiddens, bias=bias)
         self.W_v = nn.Linear(value_size, num_hiddens, bias=bias)
