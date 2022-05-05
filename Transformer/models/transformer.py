@@ -84,6 +84,12 @@ class DecoderBlock(nn.Module):
         self.add_norm3 = AddNorm(norm_shape, dropout)
 
     def forward(self, X, state):
+        """
+
+        :param X: [B, T, H]
+        :param state: [[B, T, H], [B, ], *args]
+        :return: [B, T, H](输入输出维度相同)
+        """
         enc_outputs, enc_valid_lens = state[0], state[1]
         # 训练阶段，输出序列的所有词元都在同⼀时间处理，
         # 因此state[2][self.i]初始化为None。

@@ -131,3 +131,7 @@ dmypy.json
 /Seq2Seq/logs/loss/
 .idea
 /Transformer/wandb/
+/Transformer/logs/
+/data/
+/data/
+/BERT/checkpoint/

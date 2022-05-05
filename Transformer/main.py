@@ -50,6 +50,7 @@ def train_net(net, date_iter, lr, num_epochs, tgt_vocab, device):
             bos = torch.tensor([tgt_vocab["<bos>"]] * Y.shape[0], device=device).reshape(-1, 1)
             dec_input = torch.cat([bos, Y[:, :-1]], dim=1)
             # Decoder:拼接起始符号和原始输入
+            # 直接输出T个时刻的预测结果
             Y_hat, _ = net(X, dec_input, X_valid_len)
             # l:[B, 1]
             l = loss(Y_hat, Y, Y_valid_len)
@@ -61,7 +62,6 @@ def train_net(net, date_iter, lr, num_epochs, tgt_vocab, device):
                 metric.add(l.sum(), num_tokens)
 
         if (epoch + 1) % 10 == 0:
-            # writer.add_scalar("loss", scalar_value=metric[0] / metric[1], global_step=epoch + 1)
             wandb.log({"loss": metric[0] / metric[1]})
 
     torch.save(net.state_dict(), "./checkpoints/net.pth")
@@ -81,7 +81,7 @@ def predict_seq2seq(net, src_sentence, src_vocab, tgt_vocab, num_steps, device, 
     enx_X = torch.unsqueeze(torch.tensor(src_tokens, device=device, dtype=torch.long), dim=0)
     enc_outputs = net.encoder(enx_X, enc_valid_len)
     dec_state = net.decoder.init_state(enc_outputs, enc_valid_len)
-    # 翻译词（第一个预测字符为开始字符编码）
+    # 预测的起始值（第一个预测字符为开始字符编码）
     dec_X = torch.unsqueeze(torch.tensor([tgt_vocab["<bos>"]], dtype=torch.long, device=device), dim=0)
     output_seq, attention_weight_seq = [], []
 
@@ -91,6 +91,7 @@ def predict_seq2seq(net, src_sentence, src_vocab, tgt_vocab, num_steps, device, 
         pred = dec_X.squeeze(dim=0).type(torch.int32).item()
         if save_attention_weights:
             attention_weight_seq.append(net.decoder.attention_weights)
+        # 预测截止
         if pred == tgt_vocab["<eos>"]:
             break
         output_seq.append(pred)
@@ -113,6 +114,7 @@ def bleu(pred_seq, lab_seq, k):
                 num_matches += 1
                 label_subs[" ".join(pre_tokens[i: i + n])] -= 1
         score *= math.pow(num_matches / (len_pred - n + 1), math.pow(0.5, n))
+
     return score
 
 
@@ -120,7 +122,7 @@ def evaluate(net, engs, fras, src_vocab, tgt_vocab, num_layers, num_steps, num_h
     net.load_state_dict(torch.load("./checkpoints/net.pth"))
     net.eval()
     for eng, fra in zip(engs, fras):
-        translation, dec_attention_weight_seq = d2l.predict_seq2seq(
+        translation, dec_attention_weight_seq = predict_seq2seq(
             net, eng, src_vocab, tgt_vocab, num_steps, device, True)
         print(f'{eng} => {translation}, ',
               f'bleu {bleu(translation, fra, k=2):.3f}')
@@ -153,6 +155,7 @@ def evaluate(net, engs, fras, src_vocab, tgt_vocab, num_layers, num_steps, num_h
             dec_inter_attention_weights, xlabel='Key positions',
             ylabel='Query positions', titles=['Head %d' % i for i in range(1, 5)],
             figsize=(7, 3.5))
+
         plt.show()
 
 
