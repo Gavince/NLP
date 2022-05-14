@@ -48,6 +48,9 @@ def train_net(net, date_iter, lr, num_epochs, tgt_vocab, device):
             # 为预测加入句子的起始符: begging of sequence
             # B*1
             bos = torch.tensor([tgt_vocab["<bos>"]] * Y.shape[0], device=device).reshape(-1, 1)
+            # Y =       [T1,  T2, T3, T4...Tn]
+            # Y_hat =   [T1,  T2, T3, T4...Tn]
+            # dec_input:[bos, T1, T2, T3...Tn-1]
             dec_input = torch.cat([bos, Y[:, :-1]], dim=1)
             # Decoder:拼接起始符号和原始输入
             # 直接输出T个时刻的预测结果

@@ -99,6 +99,7 @@ class DecoderBlock(nn.Module):
         if state[2][self.i] is None:
             key_values = X
         else:
+            # 时间维度上传递数据block1(T0) --> block1(T1)
             # 只计算到当前时刻位置的自注意力编码：eg:假定当前时刻为T3 key-values: T1 T2 query: T3, 即在时间维度上进行自增
             key_values = torch.cat((state[2][self.i], X), dim=1)
         state[2][self.i] = key_values

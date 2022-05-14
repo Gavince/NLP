@@ -24,9 +24,9 @@ def masked_softmax(X, valid_lens):
         if valid_lens.dim() == 1:
             valid_lens = torch.repeat_interleave(valid_lens, shape[1])
         else:
-            # valid_lens: B*D
+            # valid_lens: [B, T] --> [B*D]
             valid_lens = valid_lens.reshape(-1)
-        # mask val]
+        # 计算带掩码的softmax
         # X: B*T*H reshape--> (B*T) * H
         X = d2l.sequence_mask(X.reshape(-1, shape[-1]), valid_lens, value=-1e6)
 
