@@ -15,17 +15,17 @@ def load_data_imdb(batch_size, num_steps=500):
 
     train_data = d2l.read_imdb(data_dir, True)
     test_data = d2l.read_imdb(data_dir, False)
-
+    # 句子token化
     train_tokens = d2l.tokenize(train_data[0], token='word')
     test_tokens = d2l.tokenize(test_data[0], token='word')
-
+    # 构建Vocab词表
     vocab = d2l.Vocab(train_tokens, min_freq=5)
-
+    # 构建样本对(采取超出截断,不够进行padding补全)
     train_features = torch.tensor([d2l.truncate_pad(
         vocab[line], num_steps, vocab['<pad>']) for line in train_tokens])
     test_features = torch.tensor([d2l.truncate_pad(
         vocab[line], num_steps, vocab['<pad>']) for line in test_tokens])
-
+    # 构建dataloaer
     train_iter = d2l.load_array((train_features, torch.tensor(train_data[1])),
                                 batch_size)
     test_iter = d2l.load_array((test_features, torch.tensor(test_data[1])),

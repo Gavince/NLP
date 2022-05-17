@@ -28,3 +28,13 @@ class BiRNN(nn.Module):
 
         return outs
 
+
+if __name__ == "__main__":
+    net = BiRNN(100, 20, 10, 2)
+    # from torch.utils.tensorboard import SummaryWriter
+    #
+    # w = SummaryWriter("../log")
+    # w.add_graph(net, torch.tensor([[1, 2, 3, 4, 5, 6, 7, 8], [2, 4, 5, 6, 7, 8, 9, 10]]))
+    # print(net)
+    # w.close()
+
