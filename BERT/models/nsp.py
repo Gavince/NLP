@@ -4,7 +4,6 @@
 # @FileName: nsp.py
 # @Software: PyCharm
 # @Blog    ：https://blog.csdn.net/weixin_35154281
-import torch
 from torch import nn
 
 
@@ -23,6 +22,6 @@ class NextSentencePred(nn.Module):
         return self.output(X)
 
 
-if __name__ =="__main__":
+if __name__ == "__main__":
     nst = NextSentencePred(728)
     print(nst)

@@ -54,7 +54,6 @@ def _get_next_sentence(sentence, next_sentence, paragraphs):
 def _get_nxt_data_from_paragraph(paragraph, paragrahs, vocab, max_len):
     """
     下一个句子预测的样本对
-
     """
     nsp_data_from_paragraph = []
     for i in range(len(paragraph) - 1):
@@ -102,7 +101,7 @@ def _replace_mlm_tokens(tokens, candidate_pred_position, num_mlm_preds, vocab):
                 mask_token = random.choice(vocab.idx_to_token)
         # mlm_input_tokens: ["<cls>", "I", "<mask>", "<seq>", "beautiful", "day", "seq"]
         mlm_input_tokens[mlm_pred_position] = mask_token
-        # (预测位置, 预测标签)
+        # (预测位置, 真实标签)
         # (2, "hate")
         pred_position_and_labels.append((mlm_pred_position, tokens[mlm_pred_position]))
 
@@ -117,7 +116,7 @@ def _get_mlm_data_from_tokens(tokens, vocab):
     :return: 序列, 掩码位置, 掩码标签
     """
     candidate_pred_position = []
-    # 舍弃标记位置，只对有效值进行抽取
+    # 舍弃特殊的标记位置，只对有效值进行掩码处理
     for i, token in enumerate(tokens):
         if token in ["<cls>", "<sep>"]:
             continue
@@ -133,6 +132,7 @@ def _get_mlm_data_from_tokens(tokens, vocab):
     pre_position_and_labels = sorted(pre_position_and_labels, key=lambda x: x[0])
     pred_positions = [v[0] for v in pre_position_and_labels]
     mlm_pred_labels = [v[1] for v in pre_position_and_labels]
+
     # mlm_pre_labels为掩蔽后的预测值
     return vocab[mlm_input_tokens], pred_positions, vocab[mlm_pred_labels]
 

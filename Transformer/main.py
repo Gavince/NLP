@@ -5,7 +5,6 @@
 # @Software: PyCharm
 # @Blog    ：https://blog.csdn.net/weixin_35154281
 import matplotlib.pyplot as plt
-from torch.utils.tensorboard import SummaryWriter
 import pandas as pd
 from Seq2Seq.utils import MaskSoftmaxCELoss
 from models import TransformerDecoder
@@ -36,7 +35,7 @@ def train_net(net, date_iter, lr, num_epochs, tgt_vocab, device):
     loss = MaskSoftmaxCELoss()
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
 
-    wandb.watch(net)
+    # wandb.watch(net)
     net.train()
     for epoch in tqdm(range(num_epochs)):
         timer = d2l.Timer()
@@ -64,8 +63,8 @@ def train_net(net, date_iter, lr, num_epochs, tgt_vocab, device):
             with torch.no_grad():
                 metric.add(l.sum(), num_tokens)
 
-        if (epoch + 1) % 10 == 0:
-            wandb.log({"loss": metric[0] / metric[1]})
+        # if (epoch + 1) % 10 == 0:
+        #     wandb.log({"loss": metric[0] / metric[1]})
 
     torch.save(net.state_dict(), "./checkpoints/net.pth")
     print(f'loss {metric[0] / metric[1]:.3f}, {metric[1] / timer.stop():.1f} '
@@ -179,8 +178,8 @@ if __name__ == "__main__":
         args.num_layers, args.dropout)
 
     net = d2l.EncoderDecoder(encoder, decoder)
-    wandb.init(project="Transform", entity="wanyu")
-    wandb.config = args
+    # wandb.init(project="Transform", entity="wanyu")
+    # wandb.config = args
     if args.is_training:
         train_net(net, train_iter, args.lr, args.num_epochs, tgt_vocab, args.device)
     else:

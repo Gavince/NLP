@@ -11,6 +11,19 @@ import math
 from d2l import torch as d2l
 
 
+def sequence_mask(X, valid_len, value=0):
+    """Mask irrelevant entries in sequences.
+    Defined in :numref:`sec_seq2seq_decoder`"""
+
+    max_len = X.size(1)
+    # 假定：max_len=3, [[1, 2, 3]] < [[1], [2], [0]]
+    # 构建mask矩阵为：[[False, False, False], [True, False, False], False], [False, False, False]]
+    mask = torch.arange((max_len), dtype=torch.float32,
+                        device=X.device)[None, :] < valid_len[:, None]
+    X[~mask] = value
+    return X
+
+
 def masked_softmax(X, valid_lens):
     """
     :param X:　X的形状[B, T(q), T(k-v pair)]
@@ -24,11 +37,11 @@ def masked_softmax(X, valid_lens):
         if valid_lens.dim() == 1:
             valid_lens = torch.repeat_interleave(valid_lens, shape[1])
         else:
-            # valid_lens: [B, T] --> [B*D]
+            # valid_lens: [B, T] --> [B*T]
             valid_lens = valid_lens.reshape(-1)
         # 计算带掩码的softmax
         # X: B*T*H reshape--> (B*T) * H
-        X = d2l.sequence_mask(X.reshape(-1, shape[-1]), valid_lens, value=-1e6)
+        X = sequence_mask(X.reshape(-1, shape[-1]), valid_lens, value=-1e6)
 
         return nn.functional.softmax(X.reshape(shape), dim=-1)
 

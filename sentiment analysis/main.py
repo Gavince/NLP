@@ -8,7 +8,7 @@
 import torch
 from torch import nn
 from d2l import torch as d2l
-from birnn import BiRNN
+from models.birnn import BiRNN
 from utils import TokenEmbedding
 
 

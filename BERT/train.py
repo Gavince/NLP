@@ -23,8 +23,8 @@ def _get_batch_loss_bert(net, loss, vocab_size, tokens_X,
                                   valid_lens_x.reshape(-1),
                                   pred_positions_X)
     # 计算遮蔽语⾔模型损失
-    # mlm_Y_hat:[B, T, V] mlm_T:[B, T] ---> reshape---> mlm_Y_hat:[B*T, V] mlm_T:[B*T,] CrossEntropy
-    # mlm_weight_X: [B*T, 1]
+    # mlm_Y_hat:[B, C, V] mlm_T:[B, C] ---> reshape---> mlm_Y_hat:[B*C, V] mlm_T:[B*C,] CrossEntropy
+    # mlm_weight_X: [B*C, 1]
     # 增加权重，来计算有效损失
     mlm_l = loss(mlm_Y_hat.reshape(-1, vocab_size), mlm_Y.reshape(-1)) * \
             mlm_weights_X.reshape(-1, 1)
@@ -45,10 +45,9 @@ def train_bert(train_iter, net, loss, vocab_size, devices, num_steps):
     # 遮蔽语言模型损失的和，下一句预测任务损失的和，句子对的数量，计数
     metric = d2l.Accumulator(4)
     num_steps_reached = False
-    #　基于batch参数更新运算，一次做完整个数据时间开销比较大
+    # 　基于batch参数更新运算，一次做完整个数据时间开销比较大
     while step < num_steps and not num_steps_reached:
-        for tokens_X, segments_X, valid_lens_x, pred_positions_X, \
-            mlm_weights_X, mlm_Y, nsp_y in train_iter:
+        for tokens_X, segments_X, valid_lens_x, pred_positions_X, mlm_weights_X, mlm_Y, nsp_y in train_iter:
             tokens_X = tokens_X.to(devices[0])
             segments_X = segments_X.to(devices[0])
             valid_lens_x = valid_lens_x.to(devices[0])
@@ -71,6 +70,7 @@ def train_bert(train_iter, net, loss, vocab_size, devices, num_steps):
             if step == num_steps:
                 num_steps_reached = True
                 break
+
     torch.save(net.module.state_dict(), "./checkpoint/bert.pth")
     print(f'MLM loss {metric[0] / metric[3]:.3f}, '
           f'NSP loss {metric[1] / metric[3]:.3f}')

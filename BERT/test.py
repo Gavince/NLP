@@ -8,6 +8,7 @@ from d2l import torch as d2l
 import torch
 from models.bert import BERTModel
 
+
 def get_bert_encoding(net, token_a, token_b, vocab, device):
     tokens, segments = d2l.get_tokens_and_segments(token_a, token_b)
     token_ids = torch.tensor(vocab[tokens], device=device).unqueeze(0)

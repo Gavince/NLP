@@ -24,4 +24,4 @@ class PositionWiseFFN(nn.Module):
 if __name__ == "__main__":
     ffn = PositionWiseFFN(4, 4, 8)
     ffn.eval()
-    print(ffn(torch.ones((2, 3, 4)))[0])
+    print(ffn(torch.ones((2, 3, 4))))

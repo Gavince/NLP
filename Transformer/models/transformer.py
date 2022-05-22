@@ -21,13 +21,16 @@ class EncoderBlock(nn.Module):
         super(EncoderBlock, self).__init__(**kwargs)
 
         self.attention = MultiHeadAttention(key_size, query_size, value_size, num_hiddens, num_heads, dropout, use_bias)
+        # 先做加和，再做归一化处理, 即: norm(x + sublayer(x))
         self.addnorm1 = AddNorm(norm_shape, dropout)
-
+        # 使用全连接网络，增加模型的非线性
         self.ffn = PositionWiseFFN(ffn_num_input, ffn_num_hiddens, num_hiddens)
         self.addnorm2 = AddNorm(norm_shape, dropout)
 
     def forward(self, X, valid_lens):
+
         Y = self.addnorm1(X, self.attention(X, X, X, valid_lens))
+
         return self.addnorm2(Y, self.ffn(Y))
 
 
@@ -85,7 +88,6 @@ class DecoderBlock(nn.Module):
 
     def forward(self, X, state):
         """
-
         :param X: [B, T, H]
         :param state: [[B, T, H], [B, ], *args]
         :return: [B, T, H](输入输出维度相同)

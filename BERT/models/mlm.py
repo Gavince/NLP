@@ -12,6 +12,7 @@ class MaskLM(nn.Module):
     """基于掩蔽语言模型任务"""
 
     def __init__(self, vocab_size, num_hiddens, num_inputs=768, **kwargs):
+
         super(MaskLM, self).__init__(**kwargs)
         self.mlp = nn.Sequential(nn.Linear(num_inputs, num_hiddens),
                                  nn.ReLU(),
@@ -22,20 +23,22 @@ class MaskLM(nn.Module):
     def forward(self, X, pred_position):
         """
         计算基于掩蔽模型的预测任务，主要实现对掩码区域进行预测
-        :param X: shape:[B, T, H]
-        :param pred_position: shape[B, C]
-        :return:
+        :param X: shape-->[B, T, H]
+        :param pred_position: shape-->[B, C(位置数目)]
+        :return: shape-->[B, num_pred_posit1ions, V]
         """
+
         # 多少个预测位置
         num_pred_positions = pred_position.shape[1]
+        # pred_position: [[1, 2], [2, 4]] --> [1, 2, 2, 4]
         pred_position = pred_position.reshape(-1)
         batch_size = X.shape[0]
         batch_idx = torch.arange(0, batch_size)
         # 假定batch_size = 2, num_pred_positions=3
         # batch_idx = [0, 0, 0, 1, 1, 1] 表示每一个每一个batch所获取的有效值
         batch_idx = torch.repeat_interleave(batch_idx, num_pred_positions)
-        # 表示第几个样本的第T个时刻值
-        # masked_X  [B*num_pred_positions, H]
+        # 表示第几个样本的第T个时刻值，使用batch索引和预测词元位置索引
+        # masked_X: [B*num_pred_positions, H]
         masked_X = X[batch_idx, pred_position]
         masked_X = masked_X.reshape((batch_size, num_pred_positions, -1))
         mlm_y_hat = self.mlp(masked_X)

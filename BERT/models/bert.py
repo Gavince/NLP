@@ -19,9 +19,9 @@ class BERTEncoder(nn.Module):
                  max_len=1000, key_size=768, query_size=768, value_size=768,
                  **kwargs):
         super(BERTEncoder, self).__init__(**kwargs)
-        # 词编码
+        # 词元嵌入
         self.token_embedding = nn.Embedding(vocab_size, num_hiddens)
-        # 句子编码
+        # 片段嵌入
         self.segment_embedding = nn.Embedding(2, num_hiddens)
         self.blks = nn.Sequential()
         for i in range(num_layers):
@@ -29,7 +29,7 @@ class BERTEncoder(nn.Module):
                                  d2l.EncoderBlock(key_size, query_size, value_size, num_hiddens, norm_shape,
                                                   ffn_num_input
                                                   , ffn_num_hiddens, num_heads, dropout, True))
-        # 位置编码
+        # 位置嵌入（可学习的位置参数）
         self.pos_embedding = nn.Parameter(torch.randn(1, max_len, num_hiddens))
 
     def forward(self, tokens, segments, valid_lens):

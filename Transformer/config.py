@@ -26,7 +26,7 @@ def get_parser():
     parser.add_argument("--query_size", type=int, default=32, help="query的维度大小")
     parser.add_argument("--value_size", type=int, default=32, help="value的维度大小")
     parser.add_argument("--norm_shape", type=list, default=[32], help="layer norm归一化的参数")
-    parser.add_argument("--is_training", type=bool, default=False, help="是否进行训练(默认设置为训练)")
+    parser.add_argument("--is_training", type=bool, default=True, help="是否进行训练(默认设置为训练)")
     parser.add_argument("--checkpoint_dir", type=str, default="./checkpoint")
 
     return parser.parse_args()
