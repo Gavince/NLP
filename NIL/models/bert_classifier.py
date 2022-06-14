@@ -18,4 +18,5 @@ class BERTClassifier(nn.Module):
     def forward(self, inputs):
         tokens_X, segments_X, valid_lens_x = inputs
         encoder_X = self.encoder(tokens_X, segments_X, valid_lens_x)
+
         return self.output(self.hidden(encoder_X[:, 0, :]))

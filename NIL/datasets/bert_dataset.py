@@ -83,7 +83,7 @@ class SNILBERTDataset(nn.Module):
 
     def __getitem__(self, idx):
 
-        return self.all_token_ids[idx], self.all_segments[idx], self.valid_lens[idx]
+        return self.all_token_ids[idx], self.all_segments[idx], self.valid_lens[idx], self.labels[idx]
 
     def __len__(self):
         return len(self.all_token_ids)
