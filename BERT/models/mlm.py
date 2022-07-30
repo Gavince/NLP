@@ -30,11 +30,11 @@ class MaskLM(nn.Module):
 
         # 多少个预测位置
         num_pred_positions = pred_position.shape[1]
-        # pred_position: [[1, 2], [2, 4]] --> [1, 2, 2, 4]
+        # pred_position: [[1, 2, 5], [2, 4, 7]] --> [1, 2, 5, 2, 4, 7]
         pred_position = pred_position.reshape(-1)
         batch_size = X.shape[0]
         batch_idx = torch.arange(0, batch_size)
-        # 假定batch_size = 2, num_pred_positions=3
+        # 假定 batch_size = 2, num_pred_positions=3
         # batch_idx = [0, 0, 0, 1, 1, 1] 表示每一个每一个batch所获取的有效值
         batch_idx = torch.repeat_interleave(batch_idx, num_pred_positions)
         # 表示第几个样本的第T个时刻值，使用batch索引和预测词元位置索引

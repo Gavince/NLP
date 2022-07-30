@@ -81,10 +81,12 @@ def _replace_mlm_tokens(tokens, candidate_pred_position, num_mlm_preds, vocab):
     :return:
     """
     # mlm_input_tokens: ["<cls>", "I", "hate", "<seq>", "beautiful", "day", "seq"]
+    # token_index: [0, 1, 2, 3, 4, 5, 6]
     mlm_input_tokens = [token for token in tokens]
     pred_position_and_labels = []
-    # 保证位置上的随机抽取
+    # 保证所有位置上的均等的随机抽取（存放的是索引）
     random.shuffle(candidate_pred_position)
+
     for mlm_pred_position in candidate_pred_position:
         if len(pred_position_and_labels) >= num_mlm_preds:
             break
@@ -104,7 +106,8 @@ def _replace_mlm_tokens(tokens, candidate_pred_position, num_mlm_preds, vocab):
         # (预测位置, 真实标签)
         # (2, "hate")
         pred_position_and_labels.append((mlm_pred_position, tokens[mlm_pred_position]))
-
+    # mlm_input_tokens: ["<cls>", "I", "<mask>", "<seq>", "beautiful", "grils", "seq"]
+    # pred_position_and_labels: [(2, "hate"), (5, "day")]
     return mlm_input_tokens, pred_position_and_labels
 
 
@@ -116,6 +119,7 @@ def _get_mlm_data_from_tokens(tokens, vocab):
     :return: 序列, 掩码位置, 掩码标签
     """
     candidate_pred_position = []
+
     # 舍弃特殊的标记位置，只对有效值进行掩码处理
     for i, token in enumerate(tokens):
         if token in ["<cls>", "<sep>"]:
@@ -129,6 +133,8 @@ def _get_mlm_data_from_tokens(tokens, vocab):
                                                                     , candidate_pred_position, num_mlm_preds, vocab)
 
     # 按照时序位置进行排序
+    # mlm_input_tokens: ["<cls>", "I", "<mask>", "<seq>", "beautiful", "grils", "seq"]
+    # pred_position_and_labels: [(2, "hate"), (5, "day")]
     pre_position_and_labels = sorted(pre_position_and_labels, key=lambda x: x[0])
     pred_positions = [v[0] for v in pre_position_and_labels]
     mlm_pred_labels = [v[1] for v in pre_position_and_labels]
@@ -212,7 +218,7 @@ def load_data_wiki(batch_size, max_len):
     """加载WikiText-2数据集"""
     num_workers = d2l.get_dataloader_workers()
     # data_dir = d2l.download_extract('wikitext-2', 'wikitext-2')
-    paragraphs = _read_wiki("../data/wikitext-2/")
+    paragraphs = _read_wiki("../../data/wikitext-2/")
     train_set = _WikiTextDataset(paragraphs, max_len)
     train_iter = torch.utils.data.DataLoader(train_set, batch_size,
                                              shuffle=True, num_workers=num_workers)
