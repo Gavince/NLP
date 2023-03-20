@@ -48,6 +48,7 @@ def train_net(net, date_iter, lr, num_epochs, tgt_vocab, device):
             # B*1
             bos = torch.tensor([tgt_vocab["<bos>"]] * Y.shape[0], device=device).reshape(-1, 1)
             # Y =       [T1,  T2, T3, T4...Tn]
+            
             # Y_hat =   [T1,  T2, T3, T4...Tn]
             # dec_input:[bos, T1, T2, T3...Tn-1]
             dec_input = torch.cat([bos, Y[:, :-1]], dim=1)
@@ -89,6 +90,7 @@ def predict_seq2seq(net, src_sentence, src_vocab, tgt_vocab, num_steps, device, 
 
     for _ in range(num_steps):
         Y, dec_state = net.decoder(dec_X, dec_state)
+        # 单个时间步输入，单个时间步输出
         dec_X = Y.argmax(dim=2)
         pred = dec_X.squeeze(dim=0).type(torch.int32).item()
         if save_attention_weights:

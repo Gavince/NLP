@@ -35,6 +35,7 @@ class EncoderBlock(nn.Module):
 
 
 class TransformerEncoder(d2l.Encoder):
+    
     def __init__(self, vocab_size, key_size, query_size, value_size, num_hiddens, norm_shape
                  , ffn_num_input, ffn_num_hiddens, num_heads, num_Layers, dropout, use_bias=False, **kwargs):
         super(TransformerEncoder, self).__init__(**kwargs)
@@ -56,8 +57,9 @@ class TransformerEncoder(d2l.Encoder):
         :return: [B, T, H]
         """
 
-        # 向输入序列中加入位置信息
-        X = self.pos_encoding(self.embedding(X) * math.sqrt(self.num_hiddens))
+        # 向输入序列中加入位置信息l,
+        # X: [B, T, H]
+        X = self.pos_encoding(self.embedding(X) * math.sqrt(self.num_hiddens))  # 放缩数据
         self.attention_weights = [None] * len(self.blks)
         for i, blk in enumerate(self.blks):
             X = blk(X, valid_lens)
@@ -110,7 +112,7 @@ class DecoderBlock(nn.Module):
             batch_size, num_step, _ = X.shape
             # dec_valid_len: (batch_size, num_steps)
             # 每一行为[1, 2, 3.....num_steps]
-            # B*num_steps
+            # B*num_steps, 保留自回归的特性
             dec_valid_lens = torch.arange(1, num_step + 1, device=X.device).repeat(batch_size, 1)
         else:
             # 只计算当前所在的序列
@@ -150,7 +152,7 @@ class TransformerDecoder(d2l.AttentionDecoder):
         初始化解码器的状态
         :param enc_outputs: [B, T, H]
         :param enc_valid_lens: [B, ]
-        :param args:
+        :param args: 预测式存储前一个时刻的数据
         :return:拼接后的结果
         """
         return [enc_outputs, enc_valid_lens, [None] * self.num_layer]
@@ -158,7 +160,7 @@ class TransformerDecoder(d2l.AttentionDecoder):
     def forward(self, X, state):
 
         X = self.pos_encodding(self.embedding(X) * math.sqrt(self.num_hiddens))
-        # 解码端存在两个自注意力模块
+        # 解码端存在两个自注意力模块，多存在一个cro_attion
         self._attentin_weights = [[None] * len(self.blks) for _ in range(2)]
 
         for i, blk in enumerate(self.blks):

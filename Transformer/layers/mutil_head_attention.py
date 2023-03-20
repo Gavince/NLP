@@ -16,31 +16,33 @@ def sequence_mask(X, valid_len, value=0):
     Defined in :numref:`sec_seq2seq_decoder`"""
 
     max_len = X.size(1)
-    # 假定：max_len=3, [[1, 2, 3]] < [[1], [2], [0]]
-    # 构建mask矩阵为：[[False, False, False], [True, False, False], False], [False, False, False]]
+    # 假定：max_len=3, [[1, 2, 3]] < [[2]]
+    # 构建mask矩阵为：[[True, False, False]]
     mask = torch.arange((max_len), dtype=torch.float32,
                         device=X.device)[None, :] < valid_len[:, None]
     X[~mask] = value
+    
     return X
 
 
 def masked_softmax(X, valid_lens):
     """
     :param X:　X的形状[B, T(q), T(k-v pair)]
-    :param valid_lens: 有效长度
+    :param valid_lens: 有效长度 [B,]
     :return:
     """
     if valid_lens is None:
-        return nn.functional.softmax(X, dim=-1)
+        return nn.functional.softmax(X, mdim=-1)
     else:
         shape = X.shape
         if valid_lens.dim() == 1:
+            # 扩张到时间序列上
             valid_lens = torch.repeat_interleave(valid_lens, shape[1])
         else:
             # valid_lens: [B, T] --> [B*T]
             valid_lens = valid_lens.reshape(-1)
         # 计算带掩码的softmax
-        # X: B*T*H reshape--> (B*T) * H
+        # X: B*T*T' reshape--> (B*T) * T'
         X = sequence_mask(X.reshape(-1, shape[-1]), valid_lens, value=-1e6)
 
         return nn.functional.softmax(X.reshape(shape), dim=-1)
@@ -77,9 +79,9 @@ def transpose_output(X, num_heads):
     :param num_heads:
     :return: B * q * H 等价与将多个不同头的注意力进行聚合输出
     """
-    # B, num_heads, q, H/num_heads
+    # [B, num_heads, q_T, H/num_heads]
     X = X.reshape(-1, num_heads, X.shape[1], X.shape[2])
-    # B, q, num_heads, H/num_heads
+    # B, q_T, num_heads, H/num_heads
     X = X.permute(0, 2, 1, 3)
 
     return X.reshape(X.shape[0], X.shape[1], -1)
@@ -94,6 +96,7 @@ def transpose_qkv(X, num_heads):
     """
     # B*Q*num_heads, H/num_heads
     X = X.reshape(X.shape[0], X.shape[1], num_heads, -1)
+    # [B, num_heads, T, H/num_heads]
     X = X.permute(0, 2, 1, 3)
 
     return X.reshape(-1, X.shape[2], X.shape[3])
@@ -125,7 +128,7 @@ class MultiHeadAttention(nn.Module):
         values = transpose_qkv(self.W_v(values), self.num_heads)
         # B*num_heads, q or (k-v), H/num_heads
         if valid_lens is not None:
-            # (num_head*B) * T
+            # (num_head*B),eg: [1,2 3] --> [1, 1, 1, 2, 2, 2, 3, 3, 3] repeats=2
             valid_lens = torch.repeat_interleave(valid_lens, repeats=self.num_heads, dim=0)
         # B*num_heads, q, H/num_heads
         output = self.attention(queries, keys, values, valid_lens)
