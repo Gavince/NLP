@@ -6,7 +6,7 @@
 # @Blog    ：https://blog.csdn.net/weixin_35154281
 import matplotlib.pyplot as plt
 import pandas as pd
-from Seq2Seq.utils import MaskSoftmaxCELoss
+from utils import MaskSoftmaxCELoss
 from models import TransformerDecoder
 from models import TransformerEncoder
 import collections
@@ -91,7 +91,9 @@ def predict_seq2seq(net, src_sentence, src_vocab, tgt_vocab, num_steps, device, 
     for _ in range(num_steps):
         Y, dec_state = net.decoder(dec_X, dec_state)
         # 单个时间步输入，单个时间步输出
+        # [B, 1]
         dec_X = Y.argmax(dim=2)
+        # [B]
         pred = dec_X.squeeze(dim=0).type(torch.int32).item()
         if save_attention_weights:
             attention_weight_seq.append(net.decoder.attention_weights)

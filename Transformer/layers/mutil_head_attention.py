@@ -65,6 +65,7 @@ class DotProductAttention(nn.Module):
         :return: B*q_size * (k or v)_size
         """
         d = queries.shape[-1]
+        # 保证方差为1
         scores = torch.bmm(queries, keys.transpose(1, 2)) / math.sqrt(d)
         # 　注意力权重矩阵　
         self.attention_weights = masked_softmax(scores, valid_lens)

@@ -4,6 +4,9 @@
 # @FileName: transformer.py
 # @Software: PyCharm
 # @Blog    ：https://blog.csdn.net/weixin_35154281
+import sys
+sys.path.append("..")
+
 import math
 from d2l import torch as d2l
 from Transformer.layers import AddNorm, MultiHeadAttention, PositionalEncoding, PositionWiseFFN
@@ -112,7 +115,7 @@ class DecoderBlock(nn.Module):
             batch_size, num_step, _ = X.shape
             # dec_valid_len: (batch_size, num_steps)
             # 每一行为[1, 2, 3.....num_steps]
-            # B*num_steps, 保留自回归的特性
+            # [B*num_steps], 保留自回归的特性, 保证训练和推理的一致性
             dec_valid_lens = torch.arange(1, num_step + 1, device=X.device).repeat(batch_size, 1)
         else:
             # 只计算当前所在的序列
@@ -160,7 +163,7 @@ class TransformerDecoder(d2l.AttentionDecoder):
     def forward(self, X, state):
 
         X = self.pos_encodding(self.embedding(X) * math.sqrt(self.num_hiddens))
-        # 解码端存在两个自注意力模块，多存在一个cro_attion
+        # 解码端存在两个自注意力模块，多存在一个cross_attenion
         self._attentin_weights = [[None] * len(self.blks) for _ in range(2)]
 
         for i, blk in enumerate(self.blks):

@@ -6,7 +6,8 @@
 # @Blog    ：https://blog.csdn.net/weixin_35154281
 import collections
 import math
-
+import sys
+sys.path.append("..")
 from torch.utils.tensorboard import SummaryWriter
 import matplotlib.pyplot as plt
 import torch
